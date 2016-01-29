@@ -21,7 +21,7 @@ class Sentry(Extension):
     client = None
     default_config = dict(
         dsn='',
-        autoload=False
+        auto_load=True
     )
 
     _errmsg = "You need to configure Sentry extension before using its methods"
@@ -36,7 +36,7 @@ class Sentry(Extension):
         if not self.config.dsn:
             return
         self.client = raven.Client(self.config.dsn)
-        if self.config.autoload:
+        if self.config.auto_load:
             self.app.common_handlers.insert(0, self.handler)
 
     def _build_ctx_data(self):
