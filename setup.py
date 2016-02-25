@@ -12,7 +12,7 @@ from setuptools import setup
 
 setup(
     name='weppy-Sentry',
-    version='0.1',
+    version='0.2',
     url='https://github.com/gi0baro/weppy-sentry',
     license='BSD',
     author='Giovanni Barillari',
@@ -22,7 +22,7 @@ setup(
     packages=['weppy_sentry'],
     install_requires=[
         'raven==5.10.0',
-        'weppy>=0.6'
+        'weppy>=0.6.2'
     ],
     zip_safe=False,
     platforms='any',

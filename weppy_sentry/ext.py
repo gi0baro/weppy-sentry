@@ -30,6 +30,10 @@ class Sentry(Extension):
         for key, value in self.default_config.items():
             self.config[key] = self.config.get(key, value)
 
+    @staticmethod
+    def _handler_injector(route):
+        route.handlers.insert(0, route.application.ext.Sentry.handler)
+
     def on_load(self):
         self._load_config()
         self.handler = SentryHandler(self)
@@ -37,7 +41,7 @@ class Sentry(Extension):
             return
         self.client = raven.Client(self.config.dsn)
         if self.config.auto_load:
-            self.app.common_handlers.insert(0, self.handler)
+            self.app.routing_processors.append(self._handler_injector)
 
     def _build_ctx_data(self):
         ctx = {'extra': {}}
