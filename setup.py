@@ -12,7 +12,7 @@ from setuptools import setup
 
 setup(
     name='weppy-Sentry',
-    version='0.2',
+    version='0.3',
     url='https://github.com/gi0baro/weppy-sentry',
     license='BSD',
     author='Giovanni Barillari',

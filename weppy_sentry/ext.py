@@ -14,7 +14,7 @@ import sys
 from weppy._compat import iteritems
 from weppy.extensions import Extension
 from weppy.globals import current
-from weppy.handlers import Handler
+from weppy.handlers import Handler, _wrapWithHandlers
 
 
 class Sentry(Extension):
@@ -32,7 +32,9 @@ class Sentry(Extension):
 
     @staticmethod
     def _handler_injector(route):
-        route.handlers.insert(0, route.application.ext.Sentry.handler)
+        rewrap = _wrapWithHandlers(
+            [route.application.ext.Sentry.handler])(route.func)
+        route.func = rewrap
 
     def on_load(self):
         self._load_config()
