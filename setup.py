@@ -25,7 +25,7 @@ setup(
         'weppy>=1.0'
     ],
     dependency_links=[
-        'https://github.com/gi0baro/weppy/tarball/22b2537#egg=weppy',
+        'https://github.com/gi0baro/weppy/tarball/e19b8d1#egg=weppy-1.0',
     ],
     zip_safe=False,
     platforms='any',
