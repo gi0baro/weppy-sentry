@@ -38,8 +38,8 @@ class Sentry(Extension):
             return
         injection_pipeline = [self.pipe]
         rewrap = Pipeline(
-            injection_pipeline)(route.func)
-        route.func = rewrap
+            injection_pipeline)(route.f)
+        route.f = rewrap
         route.pipeline = injection_pipeline + route.pipeline
 
     def _build_ctx_data(self):
