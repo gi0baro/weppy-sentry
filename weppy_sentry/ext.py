@@ -12,9 +12,9 @@
 import raven
 import sys
 from weppy._compat import iteritems
-from weppy.extensions import Extension
+from weppy.extensions import Extension, listen_signal
 from weppy.globals import current
-from weppy.handlers import Handler, _wrapWithHandlers
+from weppy.pipeline import Pipeline, Pipe
 
 
 class Sentry(Extension):
@@ -26,24 +26,21 @@ class Sentry(Extension):
 
     _errmsg = "You need to configure Sentry extension before using its methods"
 
-    def _load_config(self):
-        for key, value in self.default_config.items():
-            self.config[key] = self.config.get(key, value)
-
-    @staticmethod
-    def _handler_injector(route):
-        rewrap = _wrapWithHandlers(
-            [route.application.ext.Sentry.handler])(route.func)
-        route.func = rewrap
-
     def on_load(self):
-        self._load_config()
-        self.handler = SentryHandler(self)
+        self.handler = SentryPipe(self)
         if not self.config.dsn:
             return
         self.client = raven.Client(self.config.dsn)
-        if self.config.auto_load:
-            self.app.routing_processors.append(self._handler_injector)
+
+    @listen_signal('after_route')
+    def inject_pipeline(self, route):
+        if not self.config.auto_load:
+            return
+        injection_pipeline = [self.pipe]
+        rewrap = Pipeline(
+            injection_pipeline)(route.func)
+        route.func = rewrap
+        route.pipeline = injection_pipeline + route.pipeline
 
     def _build_ctx_data(self):
         ctx = {'extra': {}}
@@ -68,11 +65,11 @@ class Sentry(Extension):
         self.client.captureMessage(msg, data=self._build_ctx_data(), **kwargs)
 
 
-class SentryHandler(Handler):
+class SentryPipe(Pipe):
     def __init__(self, ext):
         self.ext = ext
 
-    def on_failure(self):
+    def on_pipe_failure(self):
         self.ext.exception()
 
 
