@@ -27,7 +27,7 @@ class Sentry(Extension):
     _errmsg = "You need to configure Sentry extension before using its methods"
 
     def on_load(self):
-        self.handler = SentryPipe(self)
+        self.pipe = SentryPipe(self)
         if not self.config.dsn:
             return
         self.client = raven.Client(self.config.dsn)
