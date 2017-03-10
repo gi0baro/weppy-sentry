@@ -14,7 +14,7 @@ import sys
 from weppy._compat import iteritems
 from weppy.extensions import Extension, listen_signal
 from weppy.globals import current
-from weppy.pipeline import Pipeline, Pipe
+from weppy.pipeline import Pipe
 
 
 class Sentry(Extension):
@@ -32,15 +32,11 @@ class Sentry(Extension):
             return
         self.client = raven.Client(self.config.dsn)
 
-    @listen_signal('after_route')
-    def inject_pipeline(self, route):
-        if not self.config.auto_load:
+    @listen_signal('before_route')
+    def inject_pipeline(self, route, f):
+        if not self.client or not self.config.auto_load:
             return
-        injection_pipeline = [self.pipe]
-        rewrap = Pipeline(
-            injection_pipeline)(route.f)
-        route.f = rewrap
-        route.pipeline = injection_pipeline + route.pipeline
+        route.pipeline.insert(0, self.pipe)
 
     def _build_ctx_data(self):
         ctx = {'extra': {}}
@@ -55,10 +51,10 @@ class Sentry(Extension):
             pass
         return ctx
 
-    def exception(self, **kwargs):
+    def exception(self, exc_info=None, **kwargs):
         assert self.client, self._errmsg
         self.client.captureException(
-            sys.exc_info(), data=self._build_ctx_data(), **kwargs)
+            exc_info or sys.exc_info(), data=self._build_ctx_data(), **kwargs)
 
     def message(self, msg, **kwargs):
         assert self.client, self._errmsg
